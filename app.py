@@ -98,7 +98,7 @@ if mode == "Image Upload":
 elif mode == "Live Camera Feed":
     st.write("Analyzing live camera feed. Press 'Q' to exit.")
 
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 720)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
@@ -112,7 +112,7 @@ elif mode == "Live Camera Feed":
 
         # Object detection
         object_results = object_model(frame)
-        frame_with_objects = draw_boxes(frame.copy(), object_results, object_class_names, (255, 255, 255))
+        frame_with_objects = draw_boxes(frame.copy(), object_results, object_class_names, (0, 0, 0))
 
         # Logo detection
         logo_results = logo_model(frame)
