@@ -8,7 +8,7 @@ import pytesseract
 from torchvision.models import mobilenet_v2
 import torch
 
-# Configure Tesseract path
+# Configure the Tesseract path
 pytesseract.pytesseract.tesseract_cmd = r'D:/Program Files/Tesseract-OCR/tesseract.exe'
 
 # Load models
