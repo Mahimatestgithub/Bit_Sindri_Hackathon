@@ -5,6 +5,9 @@ import numpy as np
 import requests
 import base64
 import time
+import os
+
+API_URL = 'http://localhost:5000/process_frame'
 
 st.title("Smart Quality Vision Testing System")
 st.sidebar.title("Settings")
@@ -14,7 +17,12 @@ camera = cv2.VideoCapture(0)
 def check_food_quality(frame):
     _, img_encoded = cv2.imencode('.jpg', frame)
     try:
-        response = requests.post('http://localhost:5000/process_frame', files={'frame': img_encoded.tobytes()})
+        # Validate frame size to prevent DoS
+        if len(img_encoded.tobytes()) > 10 * 1024 * 1024:  # 10MB limit
+            st.error("Frame size too large")
+            return frame, "Error"
+        
+        response = requests.post(API_URL, files={'frame': img_encoded.tobytes()}, timeout=30)
         response.raise_for_status()  # Raise an error for bad status codes
         data = response.json()
         img_base64 = data['frame']
@@ -22,12 +30,11 @@ def check_food_quality(frame):
         frame = cv2.imdecode(np.frombuffer(img_bytes, np.uint8), cv2.IMREAD_COLOR)
         quality = data['text']
         return frame, quality
-    except requests.exceptions.RequestException as e:
-        st.error(f"Error connecting to the backend: {e}")
+    except (requests.exceptions.RequestException, requests.exceptions.Timeout) as e:
+        st.error(f"Error connecting to the backend: {str(e)[:100]}")  # Limit error message length
         return frame, "Error"
     except ValueError as e:
         st.error(f"Error decoding JSON: {e}")
-        return frame, "Error"
 
 def run_camera():
     frame_placeholder = st.empty()  # Placeholder for the video frame

@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 from PIL import Image
 from ultralytics import YOLO
-from keras.src.saving.saving_api import load_model
+from keras.saving import load_model
 import pytesseract
 from torchvision.models import mobilenet_v2
 import torch
@@ -14,7 +14,14 @@ pytesseract.pytesseract.tesseract_cmd = r'D:/Program Files/Tesseract-OCR/tessera
 # Load models
 object_model = YOLO("yolov8s.pt")
 logo_model = YOLO("logo.pt")
-fresh_model = load_model('rottenvsfresh.h5')
+model_path = 'rottenvsfresh.h5'
+if not os.path.exists(model_path):
+    raise FileNotFoundError(f"Model file {model_path} not found")
+fresh_model = load_model(model_path)
+
+# Validate model files
+if not os.path.exists("yolov8s.pt"):
+    raise FileNotFoundError("YOLOv8 model file not found")
 
 # Load class names
 object_class_names = object_model.names
@@ -54,10 +61,9 @@ def draw_boxes(frame, results, class_names, color):
                     crop_img = frame[y1:y2, x1:x2]
                     freshness_score = evaluate_rotten_vs_fresh(crop_img)
                     freshness_label, freshness_color = print_fresh(freshness_score)
-                    cv2.putText(frame, freshness_label, (x1, y1 - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, freshness_color, 2)
+                    cv2.putText(frame, freshness_label, (x1, y2 + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, freshness_color, 2)
                     cv2.rectangle(frame, (x1, y1), (x2, y2), freshness_color, 2)
     return frame
-
 
 def perform_ocr(frame):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
