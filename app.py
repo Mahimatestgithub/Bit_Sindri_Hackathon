@@ -8,8 +8,8 @@ import pytesseract
 from torchvision.models import mobilenet_v2
 import torch
 
-# Configure the Tesseract path
-pytesseract.pytesseract.tesseract_cmd = r'D:/Program Files/Tesseract-OCR/tesseract.exe'
+# Configure the Tesseract path - Use environment variable for security
+pytesseract.pytesseract.tesseract_cmd = os.environ.get('TESSERACT_PATH', '/usr/bin/tesseract')
 
 # Load models
 object_model = YOLO("yolov8s.pt")
@@ -54,10 +54,7 @@ def draw_boxes(frame, results, class_names, color):
                     crop_img = frame[y1:y2, x1:x2]
                     freshness_score = evaluate_rotten_vs_fresh(crop_img)
                     freshness_label, freshness_color = print_fresh(freshness_score)
-                    cv2.putText(frame, freshness_label, (x1, y1 - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, freshness_color, 2)
-                    cv2.rectangle(frame, (x1, y1), (x2, y2), freshness_color, 2)
-    return frame
-
+                    cv2.putText(frame, freshness_label, (x1, y2 + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, freshness_color, 2)
 
 def perform_ocr(frame):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
